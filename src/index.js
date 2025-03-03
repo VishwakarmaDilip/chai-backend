@@ -62,5 +62,7 @@ NPM PACKEAGES
     1> mongoose-aggregate-paginate-v2
     2> bcrypt
     3> jsonwebtoken
+    4> coudnery
+    5> multer
 
 */
