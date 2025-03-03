@@ -56,4 +56,11 @@ const app = express()
     }
 })()
 
+
+
+NPM PACKEAGES
+    1> mongoose-aggregate-paginate-v2
+    2> bcrypt
+    3> jsonwebtoken
+
 */
