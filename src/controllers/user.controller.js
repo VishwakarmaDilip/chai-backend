@@ -20,7 +20,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //step 1: get user detail from frontend
     const { fullName, email, username, password } = req.body
-    console.log("email:", email);
+    
 
 
     //step 2: validation - not empty
@@ -32,7 +32,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
     //step 3: check if user already exists: username, email
-    const existedUser = User.find({
+    const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
 
@@ -43,7 +43,12 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //step 4: check for images, check for avatar
     const avartarLocalPath = req.files?.avatar[0]?.path
-    const coverImageLocalPath = req.files?.coverImage[0]?.path
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path
+
+    let coverImageLocalPath 
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
 
     if (!avartarLocalPath) {
         throw new ApiError(400, "Avatar file is required")
