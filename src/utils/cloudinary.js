@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary"
 import fs from "fs"
+import { ApiError } from "./ApiError";
 
 
 // Configuration
@@ -31,8 +32,33 @@ const uploadOnCloudinary = async (loacalFilePath) => {
     }
 }
 
+// extract public id
+const getPublicIdFromURL = async (url) => {
+    const parts = url.split("/")
+    const fileName = parts.pop()
+    const publicId = fileName.split(".")[0]
 
-export {uploadOnCloudinary}
+    return publicId
+}
+
+//delete
+const deleteFromCloudinary = async (url) => {
+    try {
+        if (!url)return null
+
+        const publicId = getPublicIdFromURL(url)
+
+        const result = await cloudinary.uploader.destroy(publicId)
+
+        console.log(`Deleted: ${result}`);
+
+    } catch (error) {
+        throw new ApiError(401,error.message)
+    }
+}
+
+
+export {uploadOnCloudinary, deleteFromCloudinary}
 
 
 
