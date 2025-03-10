@@ -289,7 +289,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 const updateAccountDetail = asyncHandler(async (req, res) => {
     const { fullName, email } = req.body
 
-    if (!fullName || !email) {
+    if (!fullName && !email) {
         throw new ApiError(400, "All feild are required")
     }
 
@@ -312,7 +312,8 @@ const updateAccountDetail = asyncHandler(async (req, res) => {
 const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path
 
-    const oldAvatarURL = await User.findById(req.user).avatar
+    const user = await User.findById(req.user)
+    const oldAvatarURL = user.avatar
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar file is missing")
@@ -347,7 +348,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.file?.path
-    const oldCoverImageURL = await User.findById(req.user).coverImage
+    const user = await User.findById(req.user)
+    const oldCoverImageURL = user.coverImage
 
 
     if (!coverImageLocalPath) {
@@ -356,7 +358,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
-    if (!coverImageLocalPath.url) {
+    if (!coverImage.url) {
         throw new ApiError(400, "Error While uploading on Cover Image")
     }
 
