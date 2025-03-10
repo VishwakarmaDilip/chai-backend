@@ -194,8 +194,8 @@ const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined,
+            $unset: {
+                refreshToken: 1,
             }
         },
         {
@@ -383,7 +383,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 })
 
 const getUserChannelProfile = asyncHandler(async (req, res) => {
-    const { username } = req.param
+    const { username } = req.params
 
     if (!username) {
         throw new ApiError(400, "user name is missing")
