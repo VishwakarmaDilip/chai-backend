@@ -290,7 +290,7 @@ const updateAccountDetail = asyncHandler(async (req, res) => {
     const { fullName, email } = req.body
 
     if (!fullName && !email) {
-        throw new ApiError(400, "All feild are required")
+        throw new ApiError(400, "At least on fild are required")
     }
 
     const user = await User.findByIdAndUpdate(
