@@ -213,7 +213,7 @@ const updateVideo = asyncHandler(async (req, res) => {
             )
         }
         newThumbnailUrl = thumbnail.url
-        deleteFromCloudinary(oldThumbnailURL)
+        await deleteFromCloudinary(oldThumbnailURL)
     }else{
         newThumbnailUrl = oldThumbnailURL 
     }
@@ -256,8 +256,8 @@ const deleteVideo = asyncHandler(async (req, res) => {
     const thumbnailURL = video.thumbnail
 
     // delete from cloudinary
-    deleteFromCloudinary(videoURL)
-    deleteFromCloudinary(thumbnailURL)
+    await deleteFromCloudinary(videoURL)
+    await deleteFromCloudinary(thumbnailURL)
 
     // return response
     return res
