@@ -290,7 +290,7 @@ const updateAccountDetail = asyncHandler(async (req, res) => {
     const { fullName, email } = req.body
 
     if (!fullName && !email) {
-        throw new ApiError(400, "At least on fild are required")
+        throw new ApiError(400, "At least one fild are required")
     }
 
     const user = await User.findByIdAndUpdate(
@@ -473,7 +473,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
                     {
                         $lookup: {
                             from: "users",
-                            localField: "ownwer",
+                            localField: "owner",
                             foreignField: "_id",
                             as: "owner",
                             pipeline: [

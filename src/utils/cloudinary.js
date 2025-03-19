@@ -37,8 +37,9 @@ const getPublicIdFromURL = (url) => {
     const parts = url.split("/")
     const fileName = parts.pop()
     const publicId = fileName.split(".")[0]
+    const fileType = fileName.split(".")[1]
 
-    return publicId
+    return {publicId,fileType}
 }
 
 //delete
@@ -46,9 +47,14 @@ const deleteFromCloudinary = async (url) => {
     try {
         if (!url) return null
 
-        const publicId = getPublicIdFromURL(url)
+        const {publicId, fileType} = getPublicIdFromURL(url)
 
-        const result = await cloudinary.uploader.destroy(publicId)
+        let rsrc = "image"
+        if (!(fileType ==="jpg")) {
+            rsrc = "video"
+        }
+
+        const result = await cloudinary.uploader.destroy(publicId, {resource_type: rsrc})
 
         console.log("Deleted:", result);
 
