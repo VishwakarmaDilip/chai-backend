@@ -78,7 +78,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
                 "page": pageNumber,
                 "limit": limitNumber,
                 totalVideos,
-                "totalPages": Math.ceil(totalVideos/ limitNumber)
+                "totalPages": Math.ceil(totalVideos / limitNumber)
             },
             "All Videos Fetched"
         )
@@ -174,19 +174,49 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+    const userId = req.user._id
     //TODO: get video by id
 
+    // fetch video detail
     const getVideo = await Video.findById(videoId)
-    
+    if (!getVideo) {
+        throw new ApiError(404, "Video Not Found")
+    }
+
+    // fetch User
+    const user = await User.findById(userId)
+
+    // update watch History Detail
+    const existingHistoryIndex = user.watchHistory.findIndex(item => item.videoId.toString() === videoId)
+
+    if (existingHistoryIndex !== -1) {
+        // if the video is already in watch history, update the watchAt timestamp
+        user.watchHistory[existingHistoryIndex].watchedAt = new Date()
+    } else {
+        // if the video is not in history, add a new entry
+        user.watchHistory.push({
+            videoId,
+            title: getVideo.title,
+            thumbnail: getVideo.thumbnail,
+            watchedAt: new Date(),
+            duration: getVideo.duration,
+            progress: 0
+
+        })
+    }
+
+    // save updated user data
+    await user.save()
+
     return res.status(200)
-    .json(
-        new ApiResponse(
-            200,
-            getVideo ,
-            "Video fetched successfully"
+        .json(
+            new ApiResponse(
+                200,
+                getVideo,
+                "Video fetched successfully"
+            )
         )
-    )
-    
+
 })
 
 const updateVideo = asyncHandler(async (req, res) => {
@@ -194,7 +224,7 @@ const updateVideo = asyncHandler(async (req, res) => {
     //TODO: update video details like title, description, thumbnail
 
     // get update values
-    const {title, description} = req.body
+    const { title, description } = req.body
     const video = await Video.findById(videoId)
     const oldThumbnailURL = video.thumbnail
 
@@ -206,7 +236,7 @@ const updateVideo = asyncHandler(async (req, res) => {
     let newThumbnailUrl
     if (thumbnailLocalPath) {
         thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
-        if(!thumbnail.url) {
+        if (!thumbnail.url) {
             throw new ApiError(
                 400,
                 "something went wrong while uploading thumbnail"
@@ -214,16 +244,16 @@ const updateVideo = asyncHandler(async (req, res) => {
         }
         newThumbnailUrl = thumbnail.url
         await deleteFromCloudinary(oldThumbnailURL)
-    }else{
-        newThumbnailUrl = oldThumbnailURL 
+    } else {
+        newThumbnailUrl = oldThumbnailURL
     }
-    
+
 
     // update On DB
     const updatedDetail = await Video.findByIdAndUpdate(
         videoId,
         {
-            $set : {
+            $set: {
                 thumbnail: newThumbnailUrl,
                 title,
                 description
@@ -236,13 +266,13 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 
     return res.status(200)
-    .json(
-        new ApiResponse(
-            200,
-            updatedDetail ,
-            "Video fetched successfully"
+        .json(
+            new ApiResponse(
+                200,
+                updatedDetail,
+                "Video fetched successfully"
+            )
         )
-    )
 
 })
 
