@@ -128,10 +128,6 @@ const loginUser = asyncHandler(async (req, res) => {
     //step 1: req.body -> data
     const { email, username, password } = req.body
 
-    console.log(username);
-
-
-
     //step 2: username or email
     if (!(username || email)) {
         throw new ApiError(400, "username or email is required")
@@ -498,9 +494,6 @@ const getWatchHistory = asyncHandler(async (req, res) => {
             }
         }
     ])
-
-    console.log(user[0].watchHistory);
-    
 
     return res
         .status(200)

@@ -91,20 +91,9 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 
     // Get owner details
-    const owner = await User.aggregate([
-        {
-            $match: {
-                _id: new mongoose.Types.ObjectId(req.user._id)
-            }
-        },
-        {
-            $project: {
-                fullName: 1
-            }
-        }
-    ])
+    const owner = await User.findById(req.user._id).select("fullName")
 
-    if (!owner.length) {
+    if (!owner) {
         throw new ApiError(404, "Owner not found")
     }
 
@@ -132,31 +121,29 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 
     // check upload
-    if (!videoFile || !thumbnail) {
-        throw new ApiError(401, "Failed to upload video file or thumbnail")
+    if (!videoFile?.url || !thumbnail?.url) {
+        throw new ApiError(401, "Failed to upload video or thumbnail")
     }
 
 
     // get video duration
-    const duration = videoFile.duration
+    const duration = videoFile.duration ? videoFile.duration.toFixed(2) : "0"
 
 
     // create video object - entry in db
-    const video = await Video.create({
+    const createdVideo = await Video.create({
         videoFile: videoFile.url,
         thumbnail: thumbnail.url,
         title,
         description,
-        duration: duration.toFixed(2),
-        owner: owner[0]
+        duration,
+        owner: owner._id
     })
 
 
-    //check for videoid creation
-    const createdVideoId = await Video.findById(video._id)
-    const uploadedBy = owner[0].fullName
+    //check for video creation
 
-    if (!createdVideoId) {
+    if (!createdVideo) {
         throw new ApiError(500, "something went wrong while uploading video")
     }
 
@@ -166,8 +153,8 @@ const publishAVideo = asyncHandler(async (req, res) => {
         .status(200)
         .json(
             new ApiResponse(200, {
-                createdVideoId,
-                uploadedBy
+                createdVideo,
+                uploadedBy: owner.fullName
             }, "Video Uploaded Successfully")
         )
 })
@@ -304,6 +291,36 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+
+    // ✅ Validate videoId
+    if (!mongoose.Types.ObjectId.isValid(videoId)) {
+        throw new ApiError(400, "Invalid video ID");
+    }
+
+    // ✅ Find the video
+    const video = await Video.findById(videoId);
+    if (!video) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    // ✅ Toggle publish status
+    video.isPublished = !video.isPublished;
+
+    // ✅ Save updated status
+    await video.save();
+
+    // ✅ Return response
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    videoId: video._id,
+                    isPublished: video.isPublished
+                },
+                `Video ${video.isPublished ? "published" : "unpublished"} successfully`)
+        );
 })
 
 
